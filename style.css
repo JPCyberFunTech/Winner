@@ -18,6 +18,84 @@ body {
 	background: #dff6dc;
 }
 
+.scene {
+	position: relative;
+	width: 100vw;
+	height: 100vh;
+	height: 100dvh;
+	overflow: hidden;
+}
+
+.run-banner {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 5;
+	width: 100%;
+	padding: 10px 12px;
+	color: #000;
+	font: 700 clamp(1.5rem, 3.75vw, 3rem)/1 sans-serif;
+	text-align: center;
+	white-space: nowrap;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.run-banner.is-visible {
+	opacity: 1;
+}
+
+.run-banner.is-red {
+	color: #f00;
+}
+
+.background {
+	position: absolute;
+	inset: 0;
+	transition: opacity 70ms steps(1, end);
+}
+
+.background--winner {
+	z-index: 1;
+}
+
+.background--nega {
+	z-index: 2;
+	opacity: 0;
+}
+
+.scene.show-nega .background--nega {
+	opacity: 1;
+}
+
+.bon-link {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	z-index: 3;
+	width: calc(360px * var(--bon-scale, 0));
+	height: calc(225px * var(--bon-scale, 0));
+	opacity: 0;
+	pointer-events: none;
+	transform: translate(-50%, -50%);
+}
+
+.bon-overlay {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: fill;
+}
+
+.bon-link.bon-visible {
+	opacity: 1;
+}
+
+.bon-link.bon-link--active {
+	pointer-events: auto;
+	cursor: pointer;
+}
+
 .winner-image {
 	display: block;
 	width: 100vw;
@@ -25,4 +103,11 @@ body {
 	height: 100dvh;
 	object-fit: cover;
 	object-position: center;
+}
+
+@media (max-width: 767px) {
+	.bon-link {
+		width: calc(97.48px * var(--bon-scale, 0));
+		height: calc(211px * var(--bon-scale, 0));
+	}
 }
