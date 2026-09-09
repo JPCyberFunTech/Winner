@@ -7,9 +7,126 @@
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
-	<picture>
-		<source media="(max-width: 767px)" srcset="img/MWinner.jpg">
-		<img class="winner-image" src="img/Winner.png" alt="Congratulations illustration">
-	</picture>
+	<main class="scene" aria-label="Congratulations">
+		<div class="run-banner" aria-label="Run! Run! Run! Run! Run! Run!">RUN! RUN! RUN! RUN! RUN! RUN!</div>
+		<picture class="background background--winner">
+			<source media="(max-width: 767px)" srcset="img/MWinner.jpg">
+			<img class="winner-image" src="img/Winner.png" alt="Congratulations illustration">
+		</picture>
+		<picture class="background background--nega" aria-hidden="true">
+			<source media="(max-width: 767px)" srcset="img/NegaM.jpg">
+			<img class="winner-image" src="img/Nega.jpg" alt="">
+		</picture>
+		<a class="bon-link" href="https://www.youtube.com/watch?v=DfZAmK3jNeg" target="_blank" rel="noopener noreferrer" aria-label="Open the congratulations video">
+			<img class="bon-overlay" src="img/BON.png" alt="">
+		</a>
+
+		<audio id="win-sound" preload="auto" src="sound/win.mp3"></audio>
+	</main>
+	<script>
+		const audio = document.querySelector('#win-sound');
+		const scene = document.querySelector('.scene');
+		const runBanner = document.querySelector('.run-banner');
+		const bonLink = document.querySelector('.bon-link');
+		const bonOverlay = document.querySelector('.bon-overlay');
+		const glitchStart = 19.15;
+		const glitchEnd = 20.15;
+		const bonStart = 31.05;
+		const bonEnd = 56.26;
+		let glitchFrame = 0;
+		let lastGlitchState = false;
+		let runColor = false;
+
+		function fitRunBanner() {
+			const phrase = 'RUN!';
+			const separator = ' ';
+			const availableWidth = runBanner.clientWidth;
+			const styles = getComputedStyle(runBanner);
+			const canvas = document.createElement('canvas');
+			const context = canvas.getContext('2d');
+			context.font = `${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
+			let text = phrase;
+
+			for (let count = 2; count <= 6; count += 1) {
+				const candidate = `${text}${separator}${phrase}`;
+				if (context.measureText(candidate).width > availableWidth) break;
+				text = candidate;
+			}
+
+			runBanner.textContent = text;
+		}
+
+		function resetScene() {
+			scene.classList.remove('is-playing', 'is-glitching');
+			scene.classList.add('show-nega');
+			runBanner.classList.add('is-visible');
+			bonLink.classList.add('bon-visible', 'bon-link--active');
+			bonLink.style.setProperty('--bon-scale', '1');
+			lastGlitchState = false;
+			glitchFrame = 0;
+		}
+
+		function updateBon() {
+			if (audio.currentTime < bonStart) return;
+
+			const progress = Math.min(1, (audio.currentTime - bonStart) / (bonEnd - bonStart));
+			const scale = 0.05 + (progress * 0.95);
+			bonLink.classList.add('bon-visible');
+			bonLink.style.setProperty('--bon-scale', String(scale));
+		}
+
+		function updateRunBanner() {
+			const isVisible = audio.currentTime >= bonStart;
+			runBanner.classList.toggle('is-visible', isVisible);
+		}
+
+		function updateScene() {
+			const isGlitching = audio.currentTime >= glitchStart && audio.currentTime < glitchEnd;
+			updateBon();
+			updateRunBanner();
+
+			if (isGlitching !== lastGlitchState) {
+				scene.classList.toggle('is-glitching', isGlitching);
+				lastGlitchState = isGlitching;
+			}
+
+			if (isGlitching) {
+				glitchFrame += 1;
+				scene.classList.toggle('show-nega', glitchFrame % 2 === 0);
+			}
+
+			if (!audio.paused) requestAnimationFrame(updateScene);
+		}
+
+		async function startExperience() {
+			if (!audio.paused) return;
+
+			await audio.play();
+			scene.classList.add('is-playing');
+			requestAnimationFrame(updateScene);
+		}
+
+		scene.addEventListener('pointerdown', startExperience, { once: true });
+
+		document.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape') {
+				event.preventDefault();
+				window.location.href = 'https://youtu.be/liUE3n8R_Gc';
+			}
+		});
+
+		audio.addEventListener('ended', resetScene);
+		audio.addEventListener('pause', () => {
+			if (!audio.ended) scene.classList.remove('is-playing');
+		});
+
+		setInterval(() => {
+			runColor = !runColor;
+			runBanner.classList.toggle('is-red', runColor);
+		}, 500);
+
+		new ResizeObserver(fitRunBanner).observe(runBanner);
+		fitRunBanner();
+	</script>
 </body>
 </html>
